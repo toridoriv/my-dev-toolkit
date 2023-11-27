@@ -53,12 +53,15 @@ export type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
  * @template Unless - Optional types that should not be expanded.
  */
 export type ExpandRecursively<T, Unless = null> = T extends object
-  ? T extends infer O ? O extends Unless ? O
-    : {
-      [K in keyof O]: O[K] extends AnyFunction ? O[K]
-        : ExpandRecursively<O[K], Unless>;
-    }
-  : never
+  ? T extends infer O
+    ? O extends Unless
+      ? O
+      : {
+          [K in keyof O]: O[K] extends AnyFunction
+            ? O[K]
+            : ExpandRecursively<O[K], Unless>;
+        }
+    : never
   : T;
 
 /**
@@ -66,9 +69,10 @@ export type ExpandRecursively<T, Unless = null> = T extends object
  *
  * @param U - The union type to be transformed.
  */
-export type UnionToIntersection<U> = (
-  U extends unknown ? (arg: U) => 0 : never
-) extends (arg: infer I) => 0 ? I
+export type UnionToIntersection<U> = (U extends unknown ? (arg: U) => 0 : never) extends (
+  arg: infer I,
+) => 0
+  ? I
   : never;
 
 /**
@@ -78,7 +82,8 @@ export type UnionToIntersection<U> = (
  */
 export type LastInUnion<U> = UnionToIntersection<
   U extends unknown ? (x: U) => 0 : never
-> extends (x: infer L) => 0 ? L
+> extends (x: infer L) => 0
+  ? L
   : never;
 
 /**
@@ -86,7 +91,8 @@ export type LastInUnion<U> = UnionToIntersection<
  *
  * @param U - The union type to be transformed into a tuple.
  */
-export type UnionToTuple<U, Last = LastInUnion<U>> = [U] extends [never] ? []
+export type UnionToTuple<U, Last = LastInUnion<U>> = [U] extends [never]
+  ? []
   : [...UnionToTuple<Exclude<U, Last>>, Last];
 
 /**
@@ -94,8 +100,7 @@ export type UnionToTuple<U, Last = LastInUnion<U>> = [U] extends [never] ? []
  *
  * @param T - The type from which to remove `undefined`.
  */
-export type RemoveUndefined<T> = [T] extends [undefined] ? T
-  : Exclude<T, undefined>;
+export type RemoveUndefined<T> = [T] extends [undefined] ? T : Exclude<T, undefined>;
 
 /**
  * Takes an object type `T` and transforms it into an array of key-value pairs,
@@ -118,14 +123,15 @@ export type ReplaceAll<
   S extends string,
   From extends string,
   To extends string,
-> = From extends "" ? S
+> = From extends ""
+  ? S
   : S extends `${infer R1}${From}${infer R2}`
-    ? `${R1}${To}${ReplaceAll<R2, From, To>}`
+  ? `${R1}${To}${ReplaceAll<R2, From, To>}`
   : S;
 
 /**
  * Constructs a union type of the keys of the type `T`.
  *
- * @template T - The type to extract keys from
+ * @template T - The type to extract keys from.
  */
 export type KeyOf<T> = T extends Record<infer K, SafeAny> ? K & {} : never;
