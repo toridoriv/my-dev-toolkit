@@ -71,7 +71,7 @@ export class Template<T extends string> extends String {
       endValue = endValue.replaceAll(template, rep[key] as string);
     }
 
-    return endValue;
+    return endValue.trim();
   }
 
   #validate(value: string) {
