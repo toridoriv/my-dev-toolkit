@@ -122,3 +122,10 @@ export type ReplaceAll<
   : S extends `${infer R1}${From}${infer R2}`
     ? `${R1}${To}${ReplaceAll<R2, From, To>}`
   : S;
+
+/**
+ * Constructs a union type of the keys of the type `T`.
+ *
+ * @template T - The type to extract keys from
+ */
+export type KeyOf<T> = T extends Record<infer K, SafeAny> ? K & {} : never;
