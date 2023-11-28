@@ -1,0 +1,12 @@
+{
+  "scopes": {
+    "./test/": {
+      "@bin/": "./bin/",
+      "@tools/": "./tools/"
+    },
+    "./bin/": {
+      "@bin/": "./bin/",
+      "@tools/": "./tools/"
+    }
+  }
+}
