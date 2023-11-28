@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "@bin/": "./bin/",
+    "@tools/": "./tools/"
+  }
+}
