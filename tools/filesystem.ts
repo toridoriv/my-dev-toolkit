@@ -3,7 +3,7 @@ import {
   WalkOptions,
   walkSync,
 } from "https://deno.land/std@0.208.0/fs/walk.ts";
-import { resolve } from "https://deno.land/std@0.208.0/path/mod.ts";
+import { join, toFileUrl } from "https://deno.land/std@0.208.0/path/mod.ts";
 
 /**
  * Gets local file system paths recursively for a given directory.
@@ -12,10 +12,10 @@ import { resolve } from "https://deno.land/std@0.208.0/path/mod.ts";
  * @param options - Options to pass to walkSync.
  * @returns Array of discovered file system paths.
  */
-export function getLocalPaths(directory: string, options?: WalkOptions) {
-  const iterator = walkSync(directory, options);
+export function getLocalPaths(directory: string, options: WalkOptions = {}) {
+  const iterator = walkSync(directory, { includeDirs: false, ...options });
 
-  return Array.from(iterator, getPath.bind(null, directory));
+  return Array.from(iterator, getPath);
 }
 
 /**
@@ -33,6 +33,6 @@ export async function getAllModuleImports(path: string) {
   return Object.values(mod);
 }
 
-function getPath(directory: string, entry: WalkEntry) {
-  return resolve(directory, entry.path);
+function getPath(entry: WalkEntry) {
+  return toFileUrl(join(Deno.cwd(), entry.path)).href;
 }
