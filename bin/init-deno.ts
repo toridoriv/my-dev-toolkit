@@ -5,7 +5,7 @@ export default defineCommandOptions({
   description: "Initiates a Deno project.",
   arguments: [{ name: "path", type: "string" }],
   async action(_options, path) {
-    const vscodePath = path + "./vscode/";
+    const vscodePath = path + "/.vscode/";
     const extensions = await getExtensionsFile();
     const settings = await getSettingsFile();
 
