@@ -1,16 +1,10 @@
 import "https://deno.land/std@0.208.0/dotenv/load.ts";
 
-import { CommandOptions } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/command.ts";
-import { getFromEnvironment } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/environment.ts";
-import {
-  getAllModuleImports,
-  getLocalPaths,
-} from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/filesystem.ts";
-import {
-  Logger,
-  LoggerConfig,
-} from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/logger.ts";
-import { tryCatch } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/try-catch.ts";
+import { CommandOptions } from "@tools/command.ts";
+import { getFromEnvironment } from "@tools/environment.ts";
+import { getAllModuleImports, getLocalPaths } from "@tools/filesystem.ts";
+import { Logger, LoggerConfig } from "@tools/logger.ts";
+import { tryCatch } from "@tools/try-catch.ts";
 import { Command, EnumType } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
@@ -74,9 +68,9 @@ export const run = new Command()
     this.showHelp();
   });
 
-const localPaths = tryCatch(getLocalPaths.bind(null, env.BIN_DIR, {}), []);
+const localPaths = tryCatch(getLocalPaths.bind(null, env.BIN_DIR, { skip: [/^_/] }), []);
 const defaultPaths = ["init-deno.ts"].map(
-  (p) => "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/bin/" + p,
+  (p) => "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit@main/bin/" + p,
 );
 
 const subcommands = (

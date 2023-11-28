@@ -9,7 +9,7 @@
   "files": [
     "./tools/*"
   ],
-  "bin": "./bin/run.ts",
+  "bin": "./bin/toolkit.ts",
   "displayName": "My Dev Toolkit",
   "description": "",
   "homepage": "https://github.com/toridoriv/my-dev-toolkit",
