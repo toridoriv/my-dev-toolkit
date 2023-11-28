@@ -1,0 +1,31 @@
+{
+  "name": "my-dev-toolkit",
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toridoriv/my-dev-toolkit.git"
+  },
+  "type": "module",
+  "files": [
+    "./tools/*"
+  ],
+  "bin": "./bin/run.ts",
+  "displayName": "My Dev Toolkit",
+  "description": "",
+  "homepage": "https://github.com/toridoriv/my-dev-toolkit",
+  "author": {
+    "name": "Tori Rodriguez",
+    "email": "vrodriguezfe@icloud.com",
+    "url": "https://github.com/toridoriv"
+  },
+  "bugs": {
+    "url": "https://github.com/toridoriv/my-dev-toolkit/issues"
+  },
+  "scripts": {
+    "precoverage": "npm run test:cov",
+    "coverage": "deno coverage --unstable --exclude='test\\.(js|mjs|ts|jsx|tsx)$|/test/' .coverage",
+    "test": "ENVIRONMENT=test deno test --allow-all --unstable --config=deno.json",
+    "pretest:cov": "rm -rf .coverage",
+    "test:cov": "npm test -- --coverage=.coverage"
+  }
+}
