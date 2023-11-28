@@ -1,4 +1,4 @@
-import type { AnyFunction } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/typings.ts";
+import type { AnyFunction } from "./typings.ts";
 
 /**
  * Tries to execute a function, catching any errors and returning a fallback value.

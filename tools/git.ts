@@ -1,9 +1,9 @@
 // deno-lint-ignore-file no-namespace
-import { emojiCharToCode } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/emoji.ts";
-import { executeCommand } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/process.ts";
-import { Template } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/template.ts";
-import { Expand } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/typings.ts";
 import z from "https://deno.land/x/zod@v3.22.4/index.ts";
+import { emojiCharToCode } from "./emoji.ts";
+import { executeCommand } from "./process.ts";
+import { Template } from "./template.ts";
+import { Expand } from "./typings.ts";
 
 Object.defineProperty(globalThis, "executeCommand", { value: executeCommand });
 

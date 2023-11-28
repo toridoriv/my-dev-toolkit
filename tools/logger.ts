@@ -1,5 +1,4 @@
 // deno-lint-ignore-file no-namespace
-import type { SafeAny } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/typings.ts";
 import { deepMerge } from "https://deno.land/std@0.208.0/collections/deep_merge.ts";
 import { format } from "https://deno.land/std@0.208.0/datetime/format.ts";
 import {
@@ -10,6 +9,7 @@ import {
 } from "https://deno.land/std@0.208.0/http/status.ts";
 import z from "https://deno.land/x/zod@v3.22.4/index.ts";
 import ansicolors from "https://esm.sh/ansi-colors@4.1.3";
+import type { SafeAny } from "./typings.ts";
 
 export namespace LoggerConfig {
   export const SeverityName = {

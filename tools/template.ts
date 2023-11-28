@@ -1,10 +1,5 @@
-import type {
-  Expand,
-  ObjectEntries,
-  ReplaceAll,
-  UnionToTuple,
-} from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/typings.ts";
 import { deepMerge, filterKeys } from "https://deno.land/std@0.208.0/collections/mod.ts";
+import type { Expand, ObjectEntries, ReplaceAll, UnionToTuple } from "./typings.ts";
 
 /**
  * Template class that allows rendering a string template with placeholders.

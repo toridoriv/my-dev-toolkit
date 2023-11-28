@@ -1,9 +1,6 @@
 // deno-lint-ignore-file no-namespace
-import { Logger } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/logger.ts";
-import {
-  Expand,
-  KeyOf,
-} from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/typings.ts";
+import { Logger } from "./logger.ts";
+import { Expand, KeyOf } from "./typings.ts";
 
 /**
  * Helper function that defines command options for a CLI command.

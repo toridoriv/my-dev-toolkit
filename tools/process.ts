@@ -1,7 +1,7 @@
-import { Logger } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/logger.ts";
 import { existsSync } from "https://deno.land/std@0.208.0/fs/exists.ts";
 import { dirname } from "https://deno.land/std@0.208.0/path/dirname.ts";
 import ansicolors from "https://esm.sh/ansi-colors@4.1.3";
+import { Logger } from "./logger.ts";
 
 const logger = new Logger({
   application: "process",
