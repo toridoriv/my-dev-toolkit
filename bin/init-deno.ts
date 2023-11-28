@@ -12,8 +12,7 @@ export default defineCommandOptions({
     extensions.filename = vscodePath + extensions.filename;
     settings.filename = vscodePath + settings.filename;
 
-    Deno.mkdirSync(vscodePath);
-    Deno.mkdirSync(path, { recursive: true });
+    Deno.mkdirSync(vscodePath, { recursive: true });
     Deno.writeTextFileSync(extensions.filename, extensions.content);
     Deno.writeTextFileSync(settings.filename, settings.content);
   },
