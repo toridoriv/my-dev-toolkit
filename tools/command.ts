@@ -1,4 +1,5 @@
 // deno-lint-ignore-file no-namespace
+import { Logger } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/logger.ts";
 import {
   Expand,
   KeyOf,
@@ -262,4 +263,12 @@ export interface CommandOptions<F, A> {
    * Optional CLI flags for the command.
    */
   flags?: F extends CommandOptions.Flags ? F : never;
+}
+
+declare global {
+  /**
+   * Global logger instance available to any command.
+   */
+  // deno-lint-ignore no-var
+  var logger: Logger;
 }
