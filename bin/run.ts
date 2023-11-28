@@ -1,12 +1,23 @@
+import "https://deno.land/std@0.208.0/dotenv/load.ts";
+
 import { CommandOptions } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/command.ts";
+import { getFromEnvironment } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/environment.ts";
 import {
   getAllModuleImports,
   getLocalPaths,
 } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/filesystem.ts";
+import {
+  Logger,
+  LoggerConfig,
+} from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/logger.ts";
+import { tryCatch } from "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/tools/try-catch.ts";
 import { Command, EnumType } from "https://deno.land/x/cliffy@v1.0.0-rc.3/command/mod.ts";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
+const { env, logger } = getSetup();
 const ENV_PREFIX = "TOOLKIT_" as const;
-const BIN_DIR = Deno.env.get("TOOLKIT_BIN_DIR") || "./bin";
+
+Object.assign(globalThis, { logger });
 
 /**
  * CLI command to run toolkit commands.
@@ -21,6 +32,16 @@ export const run = new Command()
     required: false,
     global: true,
   })
+  .globalType("severity", new EnumType(LoggerConfig.SeverityName))
+  .env(
+    "TOOLKIT_LOGGER_LEVEL=<level:severity>",
+    "Logger level to use while running commands.",
+    {
+      prefix: ENV_PREFIX,
+      required: false,
+      global: true,
+    },
+  )
   .env("TOOLKIT_PROJECT_ID=<id:string>", "The id of your project in Deno Deploy.", {
     prefix: ENV_PREFIX,
     required: false,
@@ -53,8 +74,13 @@ export const run = new Command()
     this.showHelp();
   });
 
+const localPaths = tryCatch(getLocalPaths.bind(null, env.BIN_DIR, {}), []);
+const defaultPaths = ["init-deno.ts"].map(
+  (p) => "https://cdn.jsdelivr.net/gh/toridoriv/my-dev-toolkit/bin/" + p,
+);
+
 const subcommands = (
-  await Promise.all(getLocalPaths(BIN_DIR, {}).map(getAllModuleImports))
+  await Promise.all(localPaths.concat(...defaultPaths).map(getAllModuleImports))
 )
   .flat()
   .filter(isCommandOptions)
@@ -126,4 +152,28 @@ function registerSubcommands(
   subcommands.forEach((subcommand) => {
     command.command(subcommand.getName(), subcommand);
   });
+}
+
+function getSetup() {
+  const env = {
+    BIN_DIR: getFromEnvironment(
+      "TOOLKIT_BIN_DIR",
+      z.string().min(1).default("./bin").catch("./bin"),
+    ),
+    LOG_SEVERITY: getFromEnvironment(
+      "TOOLKIT_LOGGER_LEVEL",
+      LoggerConfig.SeverityNameSchema.default(
+        LoggerConfig.SeverityName.Informational,
+      ).catch(LoggerConfig.SeverityName.Informational),
+    ),
+  };
+
+  const logger = new Logger({
+    application: "run",
+    severity: env.LOG_SEVERITY,
+    environment: "",
+    mode: LoggerConfig.Mode.Pretty,
+  });
+
+  return { logger, env };
 }
