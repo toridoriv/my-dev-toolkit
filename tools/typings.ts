@@ -135,3 +135,30 @@ export type ReplaceAll<
  * @template T - The type to extract keys from.
  */
 export type KeyOf<T> = T extends Record<infer K, SafeAny> ? K & {} : never;
+
+/**
+ * Constructs a type where all properties are made non-nullable.
+ *
+ * Takes a type `T` and makes every property non-nullable by
+ * removing `undefined` and `null` from its properties.
+ *
+ * @example
+ *
+ * ```ts
+ * type User = {
+ *   id: number | undefined;
+ *   name: string | null;
+ * }
+ *
+ * type StrictUser = AllNonNullable<User>;
+ *
+ * // StrictUser is now:
+ * // {
+ * //   id: number;
+ * //   name: string;
+ * // }
+ * ```
+ */
+export type AllNonNullable<T> = {
+  [K in keyof T]: NonNullable<T[K]>;
+};
