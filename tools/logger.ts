@@ -1,15 +1,14 @@
 // deno-lint-ignore-file no-namespace
-import { deepMerge } from "https://deno.land/std@0.208.0/collections/deep_merge.ts";
-import { format } from "https://deno.land/std@0.208.0/datetime/format.ts";
 import {
   isErrorStatus,
   isInformationalStatus,
   isRedirectStatus,
   isSuccessfulStatus,
 } from "https://deno.land/std@0.208.0/http/status.ts";
-import z from "https://deno.land/x/zod@v3.22.4/index.ts";
 import ansicolors from "https://esm.sh/ansi-colors@4.1.3";
-import type { SafeAny } from "./typings.ts";
+import { ExpandedCallSite, callsites } from "./callsites.ts";
+import { deepMerge, formatDate, z } from "./deps.ts";
+import type { AllNonNullable, SafeAny } from "./typings.ts";
 
 export namespace LoggerConfig {
   export const SeverityName = {
@@ -176,12 +175,12 @@ namespace LogObject {
   export type OptionalField<T> = T | undefined;
 }
 
-class LogObject {
+export class LogObject {
   #error?: LogObject.Error;
   #request?: LogObject.Request;
   #response?: LogObject.Response;
 
-  readonly "@timestamp" = format(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
+  readonly "@timestamp" = formatDate(new Date(), "yyyy-MM-dd HH:mm:ss.SSS");
   public "log.level": LoggerConfig.LevelName = "" as LoggerConfig.LevelName;
   public "message" = "";
   public "data": LogObject.OptionalField<Array<unknown>> = undefined;
@@ -195,7 +194,8 @@ class LogObject {
   public "error.code": LogObject.OptionalField<string> = undefined;
   public "error.id": LogObject.OptionalField<string> = undefined;
   public "error.message": LogObject.OptionalField<string> = undefined;
-  public "error.stack_trace": LogObject.OptionalField<string> = undefined;
+  public "error.stack_trace": LogObject.OptionalField<ExpandedCallSite[]> = undefined;
+  public "error.type": LogObject.OptionalField<string> = undefined;
   public "service.name": LogObject.OptionalField<string> = undefined;
   public "service.version": LogObject.OptionalField<string> = undefined;
   public "service.environment": LogObject.OptionalField<string> = undefined;
@@ -248,32 +248,30 @@ class LogObject {
   }
 
   public "setErrorFields"(error: LogObject.Error) {
+    this["error.message"] = error?.message;
+    this["error.code"] = error?.code;
+    this["error.id"] = error?.id;
+    this["error.type"] = error?.name;
+
     if (error instanceof Error) {
-      this["error.id"] = error.name;
-      this["error.message"] = error.message;
-      this["error.stack_trace"] = getStackTrace(error).join(", ");
-    } else {
-      this["error.code"] = error.code;
-      this["error.id"] = error.id;
-      this["error.message"] = error.title;
-      this["error.message"] = getStackTrace().join("\n");
-      this["error.stack_trace"] = getStackTrace().join(", ");
+      this["error.stack_trace"] = callsites(error);
     }
 
     return this;
   }
 
   public "setLogFields"(level: LoggerConfig.LevelName, logger: string) {
-    const origin = getLastFileStack(
-      this.#error instanceof Error ? this.#error : undefined,
-    );
+    const cs = callsites(this.#error instanceof Error ? this.#error : undefined);
+    const origin = cs[cs.length - 1] as AllNonNullable<ExpandedCallSite>;
 
     this["log.level"] = level;
     this["log.logger"] = logger;
-    this["log.origin.file.column"] = origin.column;
-    this["log.origin.file.line"] = origin.line;
-    this["log.origin.file.name"] = origin.filename;
-    this["log.origin.file.path"] = origin.path;
+    this["log.origin.file.column"] = origin.columnNumber;
+    this["log.origin.file.line"] = origin.lineNumber;
+    this["log.origin.file.name"] = origin.fileName.substring(
+      origin.fileName.lastIndexOf("/") + 1,
+    );
+    this["log.origin.file.path"] = origin.fileName;
 
     return this;
   }
@@ -312,51 +310,6 @@ class LogObject {
   }
 }
 
-function getLastFileStack(error = new Error()) {
-  const stack = error.stack as string;
-  const files = stack.split("\n").filter(isFileLine);
-
-  return getStackDetails(formatStackLine(files[files.length - 1].trim()));
-}
-
-function getStackTrace(error = new Error()) {
-  const stack = error.stack as string;
-
-  return formatStackTrace(stack);
-}
-
-function formatStackTrace(stack: string) {
-  return stack.split("\n").filter(isFileLine).map(trim).map(formatStackLine);
-}
-
-function isFileLine(line: string) {
-  return line.includes("file://") && !line.includes("node_modules/");
-}
-
-function trim(value: string) {
-  return value.trim();
-}
-
-function formatStackLine(line: string) {
-  const cwd = `${Deno.cwd()}/`;
-  const endIndex = line.indexOf(cwd);
-
-  return line.substring(endIndex).replace(cwd, "").replaceAll(")", "");
-}
-
-function getStackDetails(stack: string) {
-  const parts = stack.split(":");
-  const fileParts = parts[0].split("/");
-  const filename = fileParts[fileParts.length - 1];
-
-  return {
-    column: Number(parts[2]),
-    line: Number(parts[1]),
-    filename,
-    path: parts[0],
-  };
-}
-
 type LogOptions = {
   message: string;
   args?: unknown[];
@@ -389,10 +342,6 @@ abstract class BaseLogger {
     level: LoggerConfig.LevelName,
     options: LogOptions,
   ) {
-    if (this.isSilentMode(severity)) {
-      return new LogObject();
-    }
-
     let loggerName = this.settings.application;
 
     if (this.settings.module) {
@@ -408,6 +357,10 @@ abstract class BaseLogger {
         this.settings.version,
         this.settings.id,
       );
+
+    if (this.isSilentMode(severity)) {
+      return logObject;
+    }
 
     const formatted = this.format(logObject);
     const transport =
@@ -478,7 +431,9 @@ class PrettyLogger extends BaseLogger {
     return Deno.inspect(data, this.settings.inspectOptions);
   }
 
-  protected prettifyStack(value: string) {
+  protected prettifyStack(cs: ExpandedCallSite) {
+    const value = `${cs.fileName}:${cs.lineNumber}:${cs.columnNumber}`;
+
     return ansicolors.yellow(`  • ${ansicolors.underline(value)}`);
   }
 
@@ -496,7 +451,7 @@ class PrettyLogger extends BaseLogger {
   protected applyTemplate(template: string, log: LogObject) {
     const args = log.data ? log.data.map(this.inspect.bind(this)).join("\n") : "";
     const stack = log["error.stack_trace"]
-      ? log["error.stack_trace"].split(", ").map(this.prettifyStack).join("\n")
+      ? log["error.stack_trace"].map(this.prettifyStack).join("\n")
       : "";
 
     if (args) {
