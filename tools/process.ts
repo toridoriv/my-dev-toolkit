@@ -1,6 +1,6 @@
 import { existsSync } from "https://deno.land/std@0.208.0/fs/exists.ts";
 import { dirname } from "https://deno.land/std@0.208.0/path/dirname.ts";
-import ansicolors from "https://esm.sh/ansi-colors@4.1.3";
+import { ansicolors } from "./deps.ts";
 import { Logger } from "./logger.ts";
 
 const logger = new Logger({

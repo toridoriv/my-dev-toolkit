@@ -1,4 +1,4 @@
-import { deepMerge, filterKeys } from "https://deno.land/std@0.208.0/collections/mod.ts";
+import { deepMerge, filterKeys } from "./deps.ts";
 import type { Expand, ObjectEntries, ReplaceAll, UnionToTuple } from "./typings.ts";
 
 /**

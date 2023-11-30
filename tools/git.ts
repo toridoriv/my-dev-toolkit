@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-namespace
-import z from "https://deno.land/x/zod@v3.22.4/index.ts";
+import { z } from "./deps.ts";
 import { emojiCharToCode } from "./emoji.ts";
 import { executeCommand } from "./process.ts";
 import { Template } from "./template.ts";
